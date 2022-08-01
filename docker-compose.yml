@@ -1,0 +1,52 @@
+version: '3.9'
+services:
+  mysql:
+    image: mysql:8
+    container_name: mariadb
+    command: --disable-log-bin
+    ports:
+      - 3306:3306
+    volumes:
+      - [pathtomariadb]/mariadb/mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_PASSWORD=mysqlpassword
+      - MYSQL_USER=nextcloud
+      - MYSQL_DATABASE=nextcloud
+      - PUID=1000
+      - PGID=1000
+    restart: unless-stopped
+    cap_add:
+      - SYS_NICE  # CAP_SYS_NICE
+
+  redis:
+    image: redis
+    image: 'bitnami/redis:latest'
+    container_name: redis
+    command: redis-server --requirepass redispass
+#    environment:
+#      - ALLOW_EMPTY_PASSWORD=yes
+    restart: unless-stopped
+
+  nextcloud:
+    container_name: nextcloud
+    image: lscr.io/linuxserver/nextcloud:latest
+    restart: always
+    ports:
+      - 443:443
+    depends_on:
+      - redis
+      - mysql
+    volumes:
+      - [pathtoapp]/nextcloud/app:/config
+      - [pathtoappdata]/nextcloud/data:/data
+    environment:
+      - MYSQL_PASSWORD=mysqlpassword
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_HOST=mariadb
+      - NEXTCLOUD_TRUSTED_DOMAINS=192.168.178.1 192.168.178.* 127.0.0.1 
+      - REDIS_HOST_PASSWORD=redispass
+      - PUID=1000
+      - PGID=1000
+    restart: unless-stopped
