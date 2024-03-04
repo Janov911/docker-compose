@@ -50,3 +50,19 @@ services:
       - PUID=1000
       - PGID=1000
     restart: unless-stopped
+
+	    # Collabora
+    collabora:
+        container_name: example-com--collabora
+        image: collabora/code:latest
+        cap_add: 
+            - MKNOD
+        environment: 
+            - domain=cloud\.local\.kpmsvps\.nl
+            - username=collabora
+            - password=8erwerk
+        ports:
+            - 1001:9980
+        restart: always
+        volumes:
+            - "/etc/localtime:/etc/localtime:ro"
